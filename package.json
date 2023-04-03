@@ -1,0 +1,23 @@
+{
+  "name": "expresspaul",
+  "version": "1.0.0",
+  "description": "Project to learn expressjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sylvainh2/expressJS-coworking.git"
+  },
+  "author": "SylvainC",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/sylvainh2/expressJS-coworking/issues"
+  },
+  "homepage": "https://github.com/sylvainh2/expressJS-coworking#readme",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
