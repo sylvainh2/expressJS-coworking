@@ -1,7 +1,12 @@
 const express = require('express');
+const morgan = require('morgan');   
+const serveFavicon = require('serve-favicon');
 const coworkings = require('./cowormod');
 const app = express();
 const port = 3000;
+
+app.use(morgan("dev"));
+app.use(serveFavicon(__dirname+"/favicon.ico"));
 
 app.get('/api/coworkings', (req, res) => {
 // let coworks=[];
