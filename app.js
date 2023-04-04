@@ -4,11 +4,15 @@ const app = express();
 const port = 3000;
 
 app.get('/api/coworkings', (req, res) => {
-let coworks="";
-coworkings.map((data)=>{
-coworks+=data.name+",";
-})
-  res.send(`coworkings ${coworks}`)
+// let coworks=[];
+// coworkings.map((data)=>{
+//     if(data.superficy>500){
+//         coworks.push(data);
+//     }
+// })
+const capa = req.query.capacity || 50;
+const coworks=coworkings.filter((data)=>data.capacity>capa);
+  res.json(coworks);
 })
 app.get('/api/coworkings/:id', (req, res) => {
 
@@ -20,7 +24,7 @@ app.get('/api/coworkings/:id', (req, res) => {
 //         coworks="Pas de données"
 //     }})
 let coworks=coworkings.find((data)=>data.id===parseInt(req.params.id));
-coworks? res.send(coworks.name):res.send('pas de données');
+coworks? res.send({message:`le coworking n°${req.params.id} est bien retouné`,data:coworks}):res.send({message:'pas de données',data:{}});
 
 })
 app.listen(port, () => {
