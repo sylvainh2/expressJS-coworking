@@ -3,12 +3,12 @@ const router = express.Router();
 const coworkingsController = require('../controllers/coworkingsController');
 
 router.route('/')
-    .get(coworkingsController.getAll)
-    .post(coworkingsController.update)
+    .get(coworkingsController.findAll)
+    .post(coworkingsController.createCoworking)
 
 router.route('/:id')
-    .get(coworkingsController.getById)
-    .put(coworkingsController.addById)
+    .get(coworkingsController.findCoworkingByPk)
+    .put(coworkingsController.updateById)
     .delete(coworkingsController.deleteById)
 
 module.exports = router;

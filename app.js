@@ -2,13 +2,15 @@ const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
 const serveFavicon = require('serve-favicon');
-
+const sequelize = require('./db/sequelize');
 const app = express();
 const port = 3001;
 
+sequelize.initDb();
+
 app.use(morgan("dev"));
 app.use(serveFavicon(__dirname+"/favicon.ico"));
-app.use(bodyParser.json())
+app.use(bodyParser.json());
 
 const coworkingsRouter = require('./routes/coworkings');
 

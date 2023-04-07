@@ -1,74 +1,104 @@
-const coworkings = require('../cowormod');
 
-function createid(){
-    let idmax=coworkings[coworkings.length-1].id;
-    return (idmax+=1);
-}
-let coworks=[];
+const sequelize = require('../db/sequelize');
+const {Coworking} = require('../db/sequelize');
+const { Op } = require("sequelize");
 
-const getAll =(req, res) => {
-    // if(req.query.galery && !req.query.date){
-    //     coworks={message:`ça se passe ici pour galery ${req.query.galery} page${req.query.page}`};
-    // }
-    // if(req.query.date && !req.query.galery){
-    //     coworks={message:`ça se passe ici pour date ${req.query.date} page${req.query.page}`};
-    // }
-    // if(req.query.galery && req.query.date){
-    //     coworks={message:`ça se passe ici pour galery et date ${req.query.galery} ${req.query.date} page${req.query.page}`};
-    // }
-    // if(!req.query.galery && !req.query.date){
-    //     coworks={message:`ça se passe ici pour All page${req.query.page}`};
-    // }
-coworks=coworkings;
-// coworkings.map((data)=>{
-//     if(data.superficy>500){
-//         coworks.push(data);
-//     }
-// })
-// const capa = req.query.capacity || 0;
-// const coworks=coworkings.filter((data)=>data.capacity>capa);
-  res.json(coworks);
-}
+const findAll =(req, res) => {
+    // Coworking.findAll()
+    // .then((allCoworkings)=> {
+    //     res.json({message: 'les coworkings sont récupérés', data: allCoworkings})
+    // })
+    // .catch(error => res.status(404).json({message:`pas de données`}))
+    Coworking.findAll({
+        where:{
+            superficy:{[Op.gte]:req.query.superficy}
+        }
+    })
+    .then((allCoworkings)=> {
+        res.json({message: 'les coworkings sont récupérés', data: allCoworkings})
+    })
+    .catch(error => res.status(404).json({message:`pas de données`}))
+};
 
-const update =(req,res)=>{
-    let newbody = req.body;
-    newbody.id = createid();
-    coworkings.push(newbody);
-    res.json({message:"un coworking a bien été ajouté",data:coworkings});
-}
+const updateById =(req,res)=>{
+    let oldCoworkingId={}
+    Coworking.findByPk(req.params.id)
+    .then((coworkingId)=> {
+        oldCoworkingId=coworkingId
+        Coworking.update({
+            name:req.body.name || oldCoworkingId.name,
+            superficy:req.body.superficy || oldCoworkingId.superficy,
+            capacity:req.body.capacity || oldCoworkingId.capacity,
+            price:req.body.price || oldCoworkingId.price,
+            address:req.body.address || oldCoworkingId.address
+        },{
+            where:{
+                id:req.params.id
+            }
+        })
+        .then(()=> {
+            Coworking.findByPk(req.params.id)
+            .then((newCoworking)=>{
+                res.json({message:`le coworking n°${newCoworking.id} a été modifié`,data:newCoworking})
+            })
+            .catch(error => res.status(404).json({message:`pas de cowork n°${req.params.id}`}))
+        })
+        .catch(error => res.status(400).json({message:`problème sur les modifications du coworking n°${req.params.id}`}))
+    })
+    .catch(error => res.status(404).json({message:`pas de cowork n°${req.params.id}`}))
+};
 
-const getById =(req, res) => {
+const findCoworkingByPk =(req, res) => {
 
-    // coworkings.map((data)=>{
-    //     if(data.id===parseInt(req.params.id)){
-    //         coworks=data.name;
-    //     }
-    //     if(!coworks){
-    //         coworks="Pas de données"
-    //     }})
-    let coworks=coworkings.find((data)=>data.id===parseInt(req.params.id));
-    coworks? res.send({message:`le coworking n°${req.params.id} est bien retouné page ${req.query.page}`,data:coworks}):res.send({message:'pas de données',data:{}});
+    Coworking.findByPk(req.params.id)
+    .then((coworkingId)=> {
+        res.json({message: `le coworking n°${coworkingId.id} est récupéré`, data: coworkingId})
+    })
+    .catch(error => res.status(404).json({message:`pas de cowork n°${req.params.id}`}))
     
-}
+};
 
-const addById =(req,res)=>{
-    // let array=coworkings.find((data)=>data.id==req.params.id)
-    let index=coworkings.findIndex((data)=>data.id==req.params.id)
-    index?coworkings[index]={...coworkings[index],...req.body}:null;
-    index?res.json({message:`le coworking n°${req.params.id} a été trouvé`,data:coworkings[index]}):res.status(404).json({message:`pas de coworking ${req.params.id} trouvé`,data:{}});
-}
+const createCoworking =(req,res)=>{
+    
+        let newCoworking = req.body;
+        Coworking.create({
+            name: req.body.name,
+            price: req.body.price,
+            address: req.body.address,
+            picture: "",
+            superficy: req.body.superficy,
+            capacity: req.body.capacity
+        })
+        .then(()=> {
+            res.json({message:'le nouveau coworking a bien été crée',data:newCoworking})
+        })
+        .catch(error => res.status(400).json({message:`problème à la création du coworking`}))
+};
 
 const deleteById =(req,res)=>{
-    let index=coworkings.findIndex((data)=>data.id==req.params.id)
-    console.log(index);
-    index>=0?coworkings.splice(index,1):null;
-    index>0?res.json({message:`le coworking n° ${req.params.id} a été supprimé`,data:coworkings}):res.status(404).json({message:`le coworking n° ${req.params.id} n'existe pas`,data:{}});
-}
+    let oldCoworkingId={}
+    Coworking.findByPk(req.params.id)
+    .then((coworkingId)=> {
+        if(coworkingId.dataValues){
+            oldCoworkingId=coworkingId.dataValues;
+            Coworking.destroy({
+                where:{
+                    id:req.params.id
+                }
+            })
+            .then((deleteCoworkingId)=> {
+                res.json({message: `le coworking n°${oldCoworkingId.id} a été détruit`, data: oldCoworkingId})
+            })
+            .catch(error => res.status(400).json({message:`problème lors du delete du coworking n°${req.params.id} ${error}`}))
+        }
+    })
+    .catch(error => res.status(404).json({message:`pas de coworking n°${req.params.id} ${error}`}))
+};
 
 module.exports ={
-    getAll,
-    update,
-    getById,
-    addById,
+    findAll,
+    updateById,
+    findCoworkingByPk,
+    createCoworking,
     deleteById
 } 
