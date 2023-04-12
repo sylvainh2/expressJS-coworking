@@ -1,6 +1,8 @@
 const {Sequelize, DataTypes} = require('sequelize');
+const bcrypt = require ('bcrypt');
 const coworks = require('../cowormod');
 const CoworkingModel = require('../models/coworkings');
+const UserModel = require('../models/user');
 
 const sequelize = new Sequelize('lapiscine_coworking', 'root', '', {
     host: 'localhost',
@@ -9,6 +11,7 @@ const sequelize = new Sequelize('lapiscine_coworking', 'root', '', {
 });
 
 const Coworking = CoworkingModel(sequelize, DataTypes);
+const User = UserModel(sequelize,DataTypes);
 
 const initDb = ()=>{
     
@@ -26,6 +29,25 @@ const initDb = ()=>{
             .then(()=> {console.log('la base a bien été synchronsée')})
             .catch(error => console.log('il manque')+error)
         })
+        bcrypt.hash('mdp',10)
+        .then((hash) =>{
+            User.create({
+                username:'Paul',
+                password:hash,
+                roles:["user","admin"]
+            })
+        })
+        .catch(err=>console.log(err))
+        
+        bcrypt.hash('mdp',10)
+        .then((hash) =>{
+            User.create({
+                username:'Pierre',
+                password:hash,
+                roles:["user"]
+            })
+        })
+        .catch(err=>console.log(err))
     })
     .then(()=>{console.log(`les ${coworks.length} ont bien été synchronsés`)})
     .catch(error => console.log('il manque')+error)
@@ -36,4 +58,4 @@ const initDb = ()=>{
     .catch(error => console.error('impossible de se connecter'+error))
     
 
-module.exports = {sequelize, Coworking, initDb};
+module.exports = {sequelize, Coworking, User, initDb};

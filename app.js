@@ -13,9 +13,10 @@ app.use(serveFavicon(__dirname+"/favicon.ico"));
 app.use(bodyParser.json());
 
 const coworkingsRouter = require('./routes/coworkings');
+const usersRouter = require('./routes/users');
 
 app.use('/api/coworkings', coworkingsRouter);
-
+app.use('/api/users',usersRouter);
 
 
 app.listen(port, () => {

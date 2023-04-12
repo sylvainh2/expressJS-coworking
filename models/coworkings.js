@@ -10,13 +10,17 @@ module.exports = (sequelize, DataTypes) => {
         name: {
             type: DataTypes.STRING,
             allowNull: false,
+            unique:true
         },
         picture: {
             type: DataTypes.STRING,
         },
         superficy: {
             type: DataTypes.INTEGER,
-            allowNull: false
+            allowNull: false,
+            validate:{isInt:
+            {msg:"la superficie doit etre un entier"}
+        }
         },
         capacity: {
             type: DataTypes.INTEGER,
@@ -24,7 +28,14 @@ module.exports = (sequelize, DataTypes) => {
         },
         price: {
             type: DataTypes.JSON,
-            allowNull: false
+            allowNull: false,
+            validate:{
+                customValidator(value){
+                    if(value.hour ===null && value.day ===null && value.month ===null){
+                        throw new Error("au moins un prix doit etre spécifié")
+                    }
+                }
+            }
         },
         address: {
             type: DataTypes.JSON,

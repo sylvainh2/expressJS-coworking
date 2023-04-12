@@ -1,7 +1,7 @@
 
 const sequelize = require('../db/sequelize');
 const {Coworking} = require('../db/sequelize');
-const { Op } = require("sequelize");
+const { Op, UniqueConstraintError, ValidationError } = require("sequelize");
 
 const findAll =(req, res) => {
     // Coworking.findAll()
@@ -9,15 +9,34 @@ const findAll =(req, res) => {
     //     res.json({message: 'les coworkings sont récupérés', data: allCoworkings})
     // })
     // .catch(error => res.status(404).json({message:`pas de données`}))
-    Coworking.findAll({
-        where:{
-            superficy:{[Op.gte]:req.query.superficy}
-        }
-    })
-    .then((allCoworkings)=> {
-        res.json({message: 'les coworkings sont récupérés', data: allCoworkings})
-    })
-    .catch(error => res.status(404).json({message:`pas de données`}))
+    console.log(req.query);
+    if(!req.query.search){
+        Coworking.findAll({
+            where:{
+                superficy:{[Op.gte]:req.query.superficy}
+            }
+        })
+        .then((allCoworkings)=> {
+            res.json({message: 'les coworkings sont récupérés', data: allCoworkings})
+        })
+        .catch(error => res.status(404).json({message:`pas de données`}))
+    }else{
+        Coworking.findAll({
+            where:{
+                name:{
+                    [Op.like]:`%${req.query.search}%`
+                }
+            }
+        })
+        .then((searchCoworkings)=> {
+            if(searchCoworkings.length!=0){
+                res.json({message: 'les coworkings sont récupérés', data: searchCoworkings})
+            }else{
+                res.json({message:`pas de coworkings avec l'occurence ${req.query.search}`})
+            }
+        })
+        .catch(error => res.status(404).json({message:`pas de données`}))
+    }
 };
 
 const updateById =(req,res)=>{
@@ -43,7 +62,11 @@ const updateById =(req,res)=>{
             })
             .catch(error => res.status(404).json({message:`pas de cowork n°${req.params.id}`}))
         })
-        .catch(error => res.status(400).json({message:`problème sur les modifications du coworking n°${req.params.id}`}))
+        .catch(error =>{
+            if(error instanceof UniqueConstraintError || error instanceof ValidationError){
+                return res.status(400).json({message:error.message,data: error})
+            }
+        })
     })
     .catch(error => res.status(404).json({message:`pas de cowork n°${req.params.id}`}))
 };
@@ -72,7 +95,12 @@ const createCoworking =(req,res)=>{
         .then(()=> {
             res.json({message:'le nouveau coworking a bien été crée',data:newCoworking})
         })
-        .catch(error => res.status(400).json({message:`problème à la création du coworking`}))
+        .catch(error =>{
+            if(error instanceof UniqueConstraintError || error instanceof ValidationError){
+                return res.status(400).json({message:error.message,data: error})
+            }
+            res.status(500).json(error)
+        })
 };
 
 const deleteById =(req,res)=>{
